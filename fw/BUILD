@@ -71,6 +71,8 @@ g4_bootloader_mbed_binary(
 )
 
 MOTEUS_SOURCES = [
+    "abs_port.h",
+    "abs_port.cc",
     "as5047.h",
     "moteus_assert.cc",
     "bldc_servo.h",
@@ -92,6 +94,7 @@ MOTEUS_SOURCES = [
     "millisecond_timer.h",
     "motor_driver.h",
     "pid.h",
+    "stm32_i2c.h",
     "stm32_spi.h",
     "stm32_serial.h",
     "stm32_serial.cc",
