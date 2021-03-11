@@ -58,6 +58,13 @@ class AbsPort {
     uint8_t encoder_i2c_address = 0x40;
     int32_t encoder_poll_ms = 10;
 
+    // These are used to convert the "raw" encoder value into a
+    // position measured in revolutions.
+    //
+    // revolutions = (raw + offset) / 65536.0f * scale
+    uint16_t position_offset = 0;
+    float position_scale = 1.0f;
+
     template <typename Archive>
     void Serialize(Archive* a) {
       a->Visit(MJ_NVP(mode));
@@ -65,10 +72,14 @@ class AbsPort {
       a->Visit(MJ_NVP(i2c_mode));
       a->Visit(MJ_NVP(encoder_i2c_address));
       a->Visit(MJ_NVP(encoder_poll_ms));
+      a->Visit(MJ_NVP(position_offset));
+      a->Visit(MJ_NVP(position_scale));
     }
   };
 
   struct Status {
+    float position = 0.0f;
+
     uint16_t encoder_raw = 0;
     bool encoder_valid = false;
 
@@ -79,6 +90,7 @@ class AbsPort {
 
     template <typename Archive>
     void Serialize(Archive* a) {
+      a->Visit(MJ_NVP(position));
       a->Visit(MJ_NVP(encoder_raw));
       a->Visit(MJ_NVP(encoder_valid));
       a->Visit(MJ_NVP(as5048_agc));

@@ -87,6 +87,14 @@ class AbsPort::Impl {
         status_.as5048_mag =
             (encoder_raw_data_[2] << 8) |
             (encoder_raw_data_[3]);
+
+        status_.position =
+            static_cast<float>(
+                static_cast<uint16_t>(
+                    status_.encoder_raw +
+                    config_.position_offset)) /
+            65536.0f *
+            config_.position_scale;
       } else if (read_status == Stm32I2c::ReadStatus::kError) {
         status_.as5048_error_count++;
       }
