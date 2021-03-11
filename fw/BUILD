@@ -29,6 +29,7 @@ cc_library(
         "foc.h",
         "math.h",
         "torque_model.h",
+        "stm32_i2c_timing.h",
     ],
     srcs = [
         "foc.cc",
@@ -175,6 +176,7 @@ cc_test(
     srcs = [
         "test/foc_test.cc",
         "test/math_test.cc",
+        "test/stm32_i2c_timing_test.cc",
         "test/torque_model_test.cc",
         "test/test_main.cc",
     ],

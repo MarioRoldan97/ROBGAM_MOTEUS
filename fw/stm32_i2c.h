@@ -18,6 +18,8 @@
 
 #include "mjlib/base/string_span.h"
 
+#include "fw/stm32_i2c_timing.h"
+
 namespace moteus {
 
 class Stm32I2c {
@@ -26,6 +28,7 @@ class Stm32I2c {
     PinName sda = NC;
     PinName scl = NC;
     int frequency = 400000;
+    I2cMode i2c_mode = I2cMode::kFast;
   };
 
   Stm32I2c(const Options& options) : options_(options) {
@@ -40,20 +43,39 @@ class Stm32I2c {
     // from CubeMX.
     i2c_->CR1 &= ~(I2C_CR1_PE);
 
-    // TODO: Actually implement different bit rates.
-    i2c_->TIMINGR = 0x10a0a6fb;
-
     // PE must be low for a bit, so wait.
     for (int i = 0; i < 1000; i++);
-    i2c_->CR1 |= (I2C_CR1_PE);
 
-    // Wait a bit for things to initialize.
+    // Now figure out the actual timing values.
+    TimingInput timing_input;
+    timing_input.peripheral_hz = HAL_RCC_GetSysClockFreq();
+    timing_input.i2c_hz = options_.frequency;
+    timing_input.i2c_mode = options_.i2c_mode;
+
+    const auto timing = CalculateI2cTiming(timing_input);
+    if (timing.error) {
+      // These values weren't achievable.  Mark everything as an
+      // error.
+      valid_ = false;
+    } else {
+      valid_ = true;
+      i2c_->CR1 =
+          (timing.digital_noise_filter << I2C_CR1_DNF_Pos) |
+          (((timing_input.analog_filter == AnalogFilter::kOff)
+            ? 1 : 0) << I2C_CR1_ANFOFF_Pos) |
+          0;
+      i2c_->TIMINGR = timing.timingr;
+    }
+
+    // Now re-enable and wait a bit.
+    i2c_->CR1 |= (I2C_CR1_PE);
     for (int i = 0; i < 1000; i++);
   }
 
   void StartReadMemory(uint8_t slave_address,
                        uint8_t address,
                        mjlib::base::string_span data) {
+    if (!valid_) { return; }
     if (mode_ != Mode::kIdle) { return; }
     if ((i2c_->CR2 & I2C_CR2_START) != 0 ||
         (i2c_->ISR & I2C_ISR_BUSY) != 0) {
@@ -85,6 +107,10 @@ class Stm32I2c {
   };
 
   ReadStatus CheckRead() {
+    if (!valid_) {
+      return ReadStatus::kError;
+    }
+
     if (mode_ == Mode::kComplete) {
       mode_ = Mode::kIdle;
       return ReadStatus::kComplete;
@@ -156,6 +182,7 @@ class Stm32I2c {
 
  private:
   const Options options_;
+  bool valid_ = false;
   i2c_t mbed_i2c_;
 
   enum class Mode {

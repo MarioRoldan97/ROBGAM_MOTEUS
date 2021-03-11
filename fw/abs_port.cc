@@ -115,6 +115,8 @@ class AbsPort::Impl {
               Stm32I2c::Options options;
               options.sda = options_.sda;
               options.scl = options_.scl;
+              options.frequency = config_.i2c_hz;
+              options.i2c_mode = static_cast<I2cMode>(config_.i2c_mode);
               return options;
             }());
         break;

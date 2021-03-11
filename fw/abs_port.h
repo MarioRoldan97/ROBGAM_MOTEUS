@@ -51,12 +51,18 @@ class AbsPort {
   struct Config {
     Mode mode = kDisabled;
 
+    int32_t i2c_hz = 400000;
+    // 0 = standard, 1 = fast, 2 = fast+
+    int32_t i2c_mode = 1;
+
     uint8_t encoder_i2c_address = 0x40;
     int32_t encoder_poll_ms = 10;
 
     template <typename Archive>
     void Serialize(Archive* a) {
       a->Visit(MJ_NVP(mode));
+      a->Visit(MJ_NVP(i2c_hz));
+      a->Visit(MJ_NVP(i2c_mode));
       a->Visit(MJ_NVP(encoder_i2c_address));
       a->Visit(MJ_NVP(encoder_poll_ms));
     }
