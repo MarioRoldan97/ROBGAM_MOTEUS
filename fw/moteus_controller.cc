@@ -268,7 +268,7 @@ class MoteusController::Impl : public multiplex::MicroServer::Server {
             return options;
           }()),
         bldc_(pool, persistent_config, telemetry_manager,
-              timer, &as5047_, &drv8323_, []() {
+              timer, &as5047_, &drv8323_, abs_port, []() {
             BldcServo::Options options;
             options.pwm1 = PA_0;
             options.pwm2 = PA_1;

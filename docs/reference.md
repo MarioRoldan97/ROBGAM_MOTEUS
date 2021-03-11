@@ -1047,6 +1047,12 @@ When in the "position timeout" mode the controller acts to damp the
 output.  This parameter controls the maximum torque available for such
 damping.
 
+## `servo.rezero_from_abs` ##
+
+If set to one, then shortly after startup, the value of the position
+will be initialized to the closest one consistent with the position
+measured at the ABS port.
+
 ## `abs_port.mode` ##
 
 Configures the mode of operation of the ABS port:
