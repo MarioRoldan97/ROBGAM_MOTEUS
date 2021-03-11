@@ -45,9 +45,17 @@ class AbsPort::Impl {
   void PollMillisecond() {
     switch (config_.mode) {
       case kDisabled: {
+        status_.encoder_valid = false;
         break;
       }
       case kAs5048: {
+        // We don't read for the first 10ms of operation, since the
+        // AS5048 documents that long of a turn on time before valid
+        // results are produced.
+        if (!status_.encoder_valid && timer_->read_ms() < 10) {
+          break;
+        }
+
         encoder_count_++;
         if (encoder_count_ >= std::max<int32_t>(5, config_.encoder_poll_ms)) {
           encoder_count_ = 0;
@@ -72,11 +80,15 @@ class AbsPort::Impl {
         status_.encoder_raw =
             (encoder_raw_data_[4] << 8) |
             (encoder_raw_data_[5]);
+        status_.encoder_valid = true;
+
         status_.as5048_agc = encoder_raw_data_[0];
         status_.as5048_diag = encoder_raw_data_[1];
         status_.as5048_mag =
             (encoder_raw_data_[2] << 8) |
             (encoder_raw_data_[3]);
+      } else if (read_status == Stm32I2c::ReadStatus::kError) {
+        status_.as5048_error_count++;
       }
     }
   }

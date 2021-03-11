@@ -64,17 +64,21 @@ class AbsPort {
 
   struct Status {
     uint16_t encoder_raw = 0;
+    bool encoder_valid = false;
 
     uint8_t as5048_agc = 0;
     uint8_t as5048_diag = 0;
     uint16_t as5048_mag = 0;
+    uint32_t as5048_error_count = 0;
 
     template <typename Archive>
     void Serialize(Archive* a) {
       a->Visit(MJ_NVP(encoder_raw));
+      a->Visit(MJ_NVP(encoder_valid));
       a->Visit(MJ_NVP(as5048_agc));
       a->Visit(MJ_NVP(as5048_diag));
       a->Visit(MJ_NVP(as5048_mag));
+      a->Visit(MJ_NVP(as5048_error_count));
     }
   };
 

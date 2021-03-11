@@ -28,8 +28,12 @@ class Stm32I2c {
     int frequency = 400000;
   };
 
-  Stm32I2c(const Options& options) {
-    i2c_init(&mbed_i2c_, options.sda, options.scl);
+  Stm32I2c(const Options& options) : options_(options) {
+    Initialize();
+  }
+
+  void Initialize() {
+    i2c_init(&mbed_i2c_, options_.sda, options_.scl);
     i2c_ = mbed_i2c_.i2c.handle.Instance;
     // The mbed libraries only generate timings for a small number of
     // fixed scenarios.  We aren't in those, so we'll rely on a number
@@ -42,19 +46,25 @@ class Stm32I2c {
     // PE must be low for a bit, so wait.
     for (int i = 0; i < 1000; i++);
     i2c_->CR1 |= (I2C_CR1_PE);
+
+    // Wait a bit for things to initialize.
+    for (int i = 0; i < 1000; i++);
   }
 
   void StartReadMemory(uint8_t slave_address,
                        uint8_t address,
                        mjlib::base::string_span data) {
     if (mode_ != Mode::kIdle) { return; }
-    if ((i2c_->CR2 & I2C_CR2_START) != 0) {
+    if ((i2c_->CR2 & I2C_CR2_START) != 0 ||
+        (i2c_->ISR & I2C_ISR_BUSY) != 0) {
       mode_ = Mode::kError;
       return;
     }
 
     slave_address_ = slave_address;
     rx_data_ = data;
+
+    i2c_->ICR |= (I2C_ICR_STOPCF | I2C_ICR_NACKCF);
 
     i2c_->CR2 = (
         I2C_CR2_START |
@@ -80,6 +90,9 @@ class Stm32I2c {
       return ReadStatus::kComplete;
     }
     if (mode_ == Mode::kError) {
+      // Re-initialize.
+      Initialize();
+
       mode_ = Mode::kIdle;
       return ReadStatus::kError;
     }
@@ -126,6 +139,7 @@ class Stm32I2c {
         if (offset_ >= rx_data_.size()) {
           // Clear any NACKs
           i2c_->ICR |= I2C_ICR_NACKCF;
+
           mode_ = Mode::kComplete;
         }
 
@@ -141,6 +155,7 @@ class Stm32I2c {
   }
 
  private:
+  const Options options_;
   i2c_t mbed_i2c_;
 
   enum class Mode {
