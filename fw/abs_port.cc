@@ -49,7 +49,7 @@ class AbsPort::Impl {
       }
       case kAs5048: {
         encoder_count_++;
-        if (encoder_count_ >= config_.encoder_hz) {
+        if (encoder_count_ >= std::max<int32_t>(5, config_.encoder_poll_ms)) {
           encoder_count_ = 0;
 
           StartAs5048Read();

@@ -52,13 +52,13 @@ class AbsPort {
     Mode mode = kDisabled;
 
     uint8_t encoder_i2c_address = 0x40;
-    int32_t encoder_hz = 100;
+    int32_t encoder_poll_ms = 10;
 
     template <typename Archive>
     void Serialize(Archive* a) {
       a->Visit(MJ_NVP(mode));
       a->Visit(MJ_NVP(encoder_i2c_address));
-      a->Visit(MJ_NVP(encoder_hz));
+      a->Visit(MJ_NVP(encoder_poll_ms));
     }
   };
 
