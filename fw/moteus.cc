@@ -275,15 +275,6 @@ int main(void) {
                              kMoteusFirmwareVersion, MOTEUS_MODEL_NUMBER);
   ClockManager clock(&timer, persistent_config, command_manager);
 
-  MoteusController moteus_controller(
-      &pool, &persistent_config, &telemetry_manager, &timer, &firmware_info);
-
-  BoardDebug board_debug(
-      &pool, &command_manager, &telemetry_manager, &multiplex_protocol,
-      moteus_controller.bldc_servo());
-
-  persistent_config.Register("id", multiplex_protocol.config(), [](){});
-
   AbsPort abs_port(
       &pool, &persistent_config, &telemetry_manager, &timer,
       [&]() {
@@ -294,6 +285,16 @@ int main(void) {
 
         return options;
       }());
+
+  MoteusController moteus_controller(
+      &pool, &persistent_config, &telemetry_manager, &timer,
+      &firmware_info, &abs_port);
+
+  BoardDebug board_debug(
+      &pool, &command_manager, &telemetry_manager, &multiplex_protocol,
+      moteus_controller.bldc_servo());
+
+  persistent_config.Register("id", multiplex_protocol.config(), [](){});
 
   GitInfo git_info;
   telemetry_manager.Register("git", &git_info);

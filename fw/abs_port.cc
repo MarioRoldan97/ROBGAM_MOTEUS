@@ -158,4 +158,8 @@ AbsPort::~AbsPort() {}
 void AbsPort::PollMillisecond() { impl_->PollMillisecond(); }
 void AbsPort::Poll() { impl_->Poll(); }
 
+const AbsPort::Status& AbsPort::status() const {
+  return impl_->status_;
 }
+
+}  // namespace moteus

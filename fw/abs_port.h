@@ -100,6 +100,8 @@ class AbsPort {
     }
   };
 
+  const Status& status() const;
+
  private:
   class Impl;
   mjlib::micro::PoolPtr<Impl> impl_;
