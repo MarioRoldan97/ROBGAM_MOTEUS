@@ -61,7 +61,7 @@ class AbsPort {
     // These are used to convert the "raw" encoder value into a
     // position measured in revolutions.
     //
-    // revolutions = (raw + offset) / 65536.0f * scale
+    // revolutions = wrap_i16(raw + offset) / 65536.0 * scale
     uint16_t position_offset = 0;
     float position_scale = 1.0f;
 

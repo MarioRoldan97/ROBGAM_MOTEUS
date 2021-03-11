@@ -90,7 +90,7 @@ class AbsPort::Impl {
 
         status_.position =
             static_cast<float>(
-                static_cast<uint16_t>(
+                static_cast<int16_t>(
                     status_.encoder_raw +
                     config_.position_offset)) /
             65536.0f *
