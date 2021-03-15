@@ -405,6 +405,9 @@ class DeviceStream:
 
         self._read_condition = asyncio.Condition()
 
+        self.emit_count = 0
+        self.poll_count = 0
+
     def ignore_all(self):
         log(f"ignore_all: data was: {self._read_data}")
         self._read_data = b''
@@ -413,9 +416,15 @@ class DeviceStream:
         log(f"write data: {data}")
         self._write_data += data
 
+    async def poll(self):
+        self.poll_count += 1
+        await self.transport.write(self.controller.make_diagnostic_read())
+
     async def maybe_emit_one(self):
         if len(self._write_data) == 0:
             return
+
+        self.emit_count += 1
 
         to_write, self._write_data = (
             self._write_data[0:MAX_SEND], self._write_data[MAX_SEND:])
@@ -530,7 +539,12 @@ class Device:
         # Stop the spew.
         self.write('\r\ntel stop\r\n'.encode('latin1'))
 
-        await asyncio.sleep(0.2)
+        # Make sure we've actually had a chance to write and poll.
+        while self._stream.poll_count < 5 and self._stream.emit_count < 1:
+            await asyncio.sleep(0.2)
+
+        log(f"poll_count {self._stream.poll_count}  " +
+            f"emit_count {self._stream.emit_count}")
 
         self._stream.ignore_all()
 
@@ -630,7 +644,7 @@ class Device:
 
     async def poll(self):
         log("poll")
-        await self._transport.write(self.controller.make_diagnostic_read())
+        await self._stream.poll()
 
     def write(self, data):
         self._stream.write(data)
