@@ -65,6 +65,13 @@ POLL_TIMEOUT_S = 0.1
 STARTUP_TIMEOUT_S = 0.5
 
 
+_LOG_FILE = open('debug.log', 'w')
+
+
+def log(fmt, *args, **kwargs):
+    print(f"{time.time():.6f} " + fmt, *args, file=_LOG_FILE, **kwargs)
+
+
 def _has_nonascii(data):
     return any([ord(x) > 127 for x in data])
 
@@ -399,9 +406,11 @@ class DeviceStream:
         self._read_condition = asyncio.Condition()
 
     def ignore_all(self):
+        log(f"ignore_all: data was: {self._read_data}")
         self._read_data = b''
 
     def write(self, data):
+        log(f"write data: {data}")
         self._write_data += data
 
     async def maybe_emit_one(self):
@@ -410,9 +419,13 @@ class DeviceStream:
 
         to_write, self._write_data = (
             self._write_data[0:MAX_SEND], self._write_data[MAX_SEND:])
+
+        log(f"maybe_emit_one to_write={to_write}")
         await self.transport.write(self.controller.make_diagnostic_write(to_write))
 
     async def process_message(self, message):
+        log(f"process_message data={message.data}")
+
         data = message.data
 
         if len(data) < 3:
@@ -430,6 +443,7 @@ class DeviceStream:
 
         self._read_data += data[3:3+datalen]
 
+        log(f"process_message: _read_data:{self._read_data}")
         async with self._read_condition:
             self._read_condition.notify_all()
 
@@ -446,11 +460,13 @@ class DeviceStream:
         return to_return
 
     async def readline(self):
+        log("readline start")
         while True:
             maybe_line = self._read_maybe_empty_line()
             if maybe_line:
                 maybe_line = maybe_line.rstrip()
                 if len(maybe_line) > 0:
+                    log(f"readline returning: {maybe_line}")
                     return maybe_line
             async with self._read_condition:
                 await self._read_condition.wait()
@@ -613,6 +629,7 @@ class Device:
         await self._stream.maybe_emit_one()
 
     async def poll(self):
+        log("poll")
         await self._transport.write(self.controller.make_diagnostic_read())
 
     def write(self, data):
