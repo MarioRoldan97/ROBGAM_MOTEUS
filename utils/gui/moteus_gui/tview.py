@@ -540,7 +540,7 @@ class Device:
         self.write('\r\ntel stop\r\n'.encode('latin1'))
 
         # Make sure we've actually had a chance to write and poll.
-        while self._stream.poll_count < 5 and self._stream.emit_count < 1:
+        while self._stream.poll_count < 5 or self._stream.emit_count < 1:
             await asyncio.sleep(0.2)
 
         log(f"poll_count {self._stream.poll_count}  " +
