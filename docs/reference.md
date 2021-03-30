@@ -1200,8 +1200,7 @@ pins are numbered 1 to 6 from left to right.
 
 ### JST ZH-4 I2C ###
 
-Looking at the pins of the connector with the bottom of the board up
-the pins are numbered 1 to 4 from left to right.
+Pin 1 is closest to the ABS label.  They are assigned as follows:
 
  - 1 - 3.3V
  - 2 - SCL
