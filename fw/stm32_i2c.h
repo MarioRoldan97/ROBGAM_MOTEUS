@@ -76,8 +76,8 @@ class Stm32I2c {
                        uint8_t address,
                        mjlib::base::string_span data) {
     if (!valid_) { return; }
-    if (mode_ != Mode::kIdle) { return; }
-    if ((i2c_->CR2 & I2C_CR2_START) != 0 ||
+    if (mode_ != Mode::kIdle ||
+        (i2c_->CR2 & I2C_CR2_START) != 0 ||
         (i2c_->ISR & I2C_ISR_BUSY) != 0) {
       mode_ = Mode::kError;
       return;
