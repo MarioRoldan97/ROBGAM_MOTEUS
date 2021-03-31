@@ -327,7 +327,7 @@ Mode: Read only
 
 The current in the D phase measured in amperes.
 
-#### 0x005 - Measured absolution position ####
+#### 0x006 - Measured absolution position ####
 
 Mode: Read only
 
