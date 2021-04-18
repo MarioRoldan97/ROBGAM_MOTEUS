@@ -248,7 +248,7 @@ class MoteusController::Impl : public multiplex::MicroServer::Server {
        MillisecondTimer* timer,
        FirmwareInfo* firmware,
        AbsPort* abs_port)
-      : as5047_([]() {
+      : as5047_(timer, []() {
           AS5047::Options options;
           options.mosi = MOTEUS_AS5047_MOSI;
           options.miso = MOTEUS_AS5047_MISO;
