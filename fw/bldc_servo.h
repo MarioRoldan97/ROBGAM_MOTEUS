@@ -190,6 +190,7 @@ class BldcServo {
     float max_velocity_derate = 2.0;
 
     uint16_t velocity_filter_length = 256;
+    uint16_t position_filter_us = 1024;
     uint16_t cooldown_cycles = 128;
 
     // If true, then the initial position will be taken from the ABS
@@ -252,6 +253,7 @@ class BldcServo {
       a->Visit(MJ_NVP(max_velocity));
       a->Visit(MJ_NVP(max_velocity_derate));
       a->Visit(MJ_NVP(velocity_filter_length));
+      a->Visit(MJ_NVP(position_filter_us));
       a->Visit(MJ_NVP(cooldown_cycles));
       a->Visit(MJ_NVP(rezero_from_abs));
       a->Visit(MJ_NVP(emit_debug));

@@ -306,6 +306,7 @@ class BldcServo::Impl {
   }
 
   void Start() {
+    ConfigureEncoder();
     ConfigureADC();
     ConfigurePwmTimer();
 
@@ -466,6 +467,10 @@ class BldcServo::Impl {
 
     // Finally, enable the timer.
     timer_->CR1 |= TIM_CR1_CEN;
+  }
+
+  void ConfigureEncoder() {
+    position_sensor_->SetFilterUs(config_.position_filter_us);
   }
 
   void ConfigureADC() {
